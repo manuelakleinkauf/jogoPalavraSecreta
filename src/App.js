@@ -33,40 +33,35 @@ function App() {
   const [ chances, setChances] = useState(qtChances)
   const [pontuacao, setPontuacao] = useState(0)
 
-  const letraECategoriaEscolhida = () => {
+  const letraECategoriaEscolhida =  useCallback(() => {
     //categoria aleatoria
     const categorias = Object.keys(palavras)
     const categoria = categorias[Math.floor(Math.random() * Object.keys(categorias).length)] 
-    
-
-    console.log(categoria)
 
     //palavra aleatoria
     const palavra = palavras[categoria][Math.floor(Math.random() * palavras[categoria].length)]
 
-    
-    console.log(palavra)
-
     return {palavra, categoria}
-  }
+  }, [palavras])
 
   //comeca o jogo
-  const comecaJogo = () =>{
+  const comecaJogo = useCallback(() =>{
+    //limpar todas as letras
+    limparEtapasLetras()
+
     //categoria e palavra
     const {palavra, categoria} = letraECategoriaEscolhida()
 
     //transformando a palavra em letras
     let letrasPalavra = palavra.split("")
     letrasPalavra = letrasPalavra.map((l) => l.toLowerCase())
-    console.log(palavra, categoria)
-    console.log(letrasPalavra)
     //setar os estados
     setPalavraEscolhida(palavra)
     setCategoriaEscolhida(categoria)
     setLetras(letrasPalavra)
 
     setEtapaJogo(etapas[1].name)
-  }
+  }, [letraECategoriaEscolhida])
   
   const verificaLetra = (letra) =>{
     const padronizarLetra = letra.toLowerCase()
@@ -95,6 +90,7 @@ function App() {
     setLetrasErradas([])
   }
 
+  //checar se tentativas terminaram
   useEffect(()=> {
     if(chances <= 0){
       //resetar tudo
@@ -104,8 +100,20 @@ function App() {
     }
   }, [chances])
 
-  console.log(letrasAdivinhadas)
-  console.log(letrasErradas)
+  //checar condição de vitória
+  useEffect(() => {
+    const letrasUnicas = [...new Set(letras)]
+    //condição de vitoria
+    if(letrasAdivinhadas.length === letrasUnicas.length){
+      //adicionar pontuacao
+      setPontuacao((pontuacaoAtual) => pontuacaoAtual += 100)
+
+      //recomeçar o jogo com nova palavra
+      comecaJogo()
+    }
+
+  },[letrasAdivinhadas, letras, comecaJogo])
+
 
   const reiniciar = () => {
     setPontuacao(0)
