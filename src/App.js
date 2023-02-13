@@ -18,6 +18,8 @@ const etapas = [
   {id: 3, name:"final"},
 ]
 
+const qtChances = 4
+
 function App() {
   const [etapaJogo, setEtapaJogo] = useState(etapas[0].name)
   const [palavras] = useState(listaPalavras)
@@ -28,7 +30,7 @@ function App() {
 
   const [letrasAdivinhadas, setLetrasAdivinhadas] = useState([])
   const [letrasErradas, setLetrasErradas] = useState([])
-  const [ chances, setChances] = useState(4)
+  const [ chances, setChances] = useState(qtChances)
   const [pontuacao, setPontuacao] = useState(0)
 
   const letraECategoriaEscolhida = () => {
@@ -84,12 +86,31 @@ function App() {
         ...atualLetrasErradas,
         padronizarLetra
       ])
+      setChances((chancesAtuais) => chancesAtuais - 1)
     }
   }
+
+  const limparEtapasLetras = () => {
+    setLetrasAdivinhadas([])
+    setLetrasErradas([])
+  }
+
+  useEffect(()=> {
+    if(chances <= 0){
+      //resetar tudo
+      limparEtapasLetras()
+
+      setEtapaJogo(etapas[2].name)
+    }
+  }, [chances])
+
   console.log(letrasAdivinhadas)
   console.log(letrasErradas)
 
   const reiniciar = () => {
+    setPontuacao(0)
+    setChances(qtChances)
+
     setEtapaJogo(etapas[0].name)
   }
 
@@ -108,7 +129,7 @@ function App() {
        pontuacao={pontuacao}
        chances={chances}
        />}
-      {etapaJogo === 'final' && <GameOver reiniciar={reiniciar}/>}
+      {etapaJogo === 'final' && <GameOver reiniciar={reiniciar} pontuacao={pontuacao}/>}
     </div>
   );
 }
